@@ -11,9 +11,22 @@ const FAIL_GAP_MS = 60_000;
 
 if (!API_BASE || !TOKEN) { console.error("Missing LOVABLE_API_BASE or WHATSAPP_WORKER_TOKEN"); process.exit(1); }
 
+// UPDATED: Added high protocolTimeout and memory args to prevent Railway freeze
 const client = new Client({
   authStrategy: new LocalAuth({ dataPath: "./session" }),
-  puppeteer: { args: ["--no-sandbox", "--disable-setuid-sandbox"] },
+  puppeteer: {
+    headless: true,
+    protocolTimeout: 120000, // Browser ko crash hone se bachane ke liye (2 min timeout)
+    args: [
+      "--no-sandbox",
+      "--disable-setuid-sandbox",
+      "--disable-dev-shm-usage",
+      "--disable-accelerated-2d-canvas",
+      "--no-first-run",
+      "--no-zygote",
+      "--single-process" // Low memory me browser ko stable rakhne ke liye
+    ],
+  },
 });
 
 client.on("qr", (qr) => { console.log("Scan this QR with WhatsApp:"); qrcode.generate(qr, { small: true }); });
