@@ -11,12 +11,13 @@ const FAIL_GAP_MS = 60_000;
 
 if (!API_BASE || !TOKEN) { console.error("Missing LOVABLE_API_BASE or WHATSAPP_WORKER_TOKEN"); process.exit(1); }
 
-// UPDATED: Added high protocolTimeout and memory args to prevent Railway freeze
+// FIXED: Standard Puppeteer configuration to prevent 'Target closed' and timeouts on Railway
 const client = new Client({
   authStrategy: new LocalAuth({ dataPath: "./session" }),
   puppeteer: {
     headless: true,
-    protocolTimeout: 120000, // Browser ko crash hone se bachane ke liye (2 min timeout)
+    protocolTimeout: 120000, // 2 minutes timeout to prevent freezing
+    executablePath: process.env.PUPPETEER_EXECUTABLE_PATH || "/usr/bin/chromium", // Points to Dockerfile Chromium
     args: [
       "--no-sandbox",
       "--disable-setuid-sandbox",
@@ -24,7 +25,8 @@ const client = new Client({
       "--disable-accelerated-2d-canvas",
       "--no-first-run",
       "--no-zygote",
-      "--single-process" // Low memory me browser ko stable rakhne ke liye
+      "--single-process",
+      "--disable-gpu" // Prevents memory crashes on low-RAM servers
     ],
   },
 });
